@@ -130,3 +130,6 @@ dmypy.json
 
 # Neptune
 .neptune
+
+*.DS_Store
+*.ipynb
