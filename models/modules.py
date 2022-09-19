@@ -7,13 +7,14 @@ class Bottleneck(nn.Module):
     def __init__(self, inp_c, out_c, kernel_size, stride, t=1):
         assert stride in [1, 2], 'stride must be either 1 or 2'
         super().__init__()
-        
+
         self.residual = stride == 1 and inp_c == out_c
         pad = kernel_size // 2
         self.reflection_pad = nn.ReflectionPad2d(pad)
         self.conv1 = nn.Conv2d(inp_c, t*inp_c, 1, 1, bias=False)
         self.in1 = nn.InstanceNorm2d(t*inp_c, affine=True)
-        self.conv2 = nn.Conv2d(t*inp_c, t*inp_c, kernel_size, stride, groups=t*inp_c, bias=False)
+        self.conv2 = nn.Conv2d(t*inp_c, t*inp_c, kernel_size,
+                               stride, groups=t*inp_c, bias=False)
         self.in2 = nn.InstanceNorm2d(t*inp_c, affine=True)
         self.conv3 = nn.Conv2d(t*inp_c, out_c, 1, 1, bias=False)
         self.in3 = nn.InstanceNorm2d(out_c, affine=True)

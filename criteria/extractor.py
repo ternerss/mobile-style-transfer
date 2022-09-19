@@ -1,5 +1,6 @@
-from torch import nn
 from functools import partial
+
+from torch import nn
 
 
 class FeatureExtractor(nn.Module):

@@ -7,6 +7,7 @@ from torch import nn
 class GradLayer(nn.Module):
     def __init__(self):
         super(GradLayer, self).__init__()
+
         kernel_v = [[0, -1, 0],
                     [0, 0, 0],
                     [0, 1, 0]]
@@ -28,6 +29,7 @@ class GradLayer(nn.Module):
         gray_coeffs = [65.738, 129.057, 25.064]
         convert = x.new_tensor(gray_coeffs).view(1, 3, 1, 1) / 256
         x_gray = x.mul(convert).sum(dim=1)
+
         return x_gray.unsqueeze(1)
 
     def forward(self, x):

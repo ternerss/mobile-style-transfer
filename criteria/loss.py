@@ -22,15 +22,16 @@ class LossModel(nn.Module):
         self,
         style,
         device,
+        run,
         style_weight=1,
         content_weight=1,
         sobel_weight=1,
         content_idx=1,
+        layer_idx=[3, 8, 15, 22],
         layers_proportions=[.35, .35, .15, .15],
         layers_weight=3e5,
     ):
         super().__init__()
-
 
         self.style_weight = style_weight
         self.content_weight = content_weight
@@ -39,11 +40,22 @@ class LossModel(nn.Module):
         self.content_idx = content_idx
         self.layers_impacts = np.array(layers_proportions) * layers_weight
 
-        self.extractor = FeatureExtractor(model=vgg16(pretrained=True), layer_idx=[3, 8, 15, 22]).to(device)
+        self.extractor = FeatureExtractor(
+            vgg16(pretrained=True), layer_idx).to(device)
+
         style_features = self.extractor(style.to(device))
         self.style_gramms = self._get_gramms(style_features)
 
         self.device = device
+
+        run["params/style_weight"].log(style_weight)
+        run["params/content_weight"].log(content_weight)
+
+        run["params/content_idx"].log(content_idx)
+        run["params/layer_idx"].log(" ".join(str(x) for x in layer_idx))
+
+        run["params/layers_impacts"].log(" ".join(str(x)
+                                                  for x in self.layers_impacts.tolist()))
 
     def _get_style_loss(self, generated):
         generated_gramms = self._get_gramms(generated)
@@ -79,4 +91,9 @@ class LossModel(nn.Module):
         mixed_loss = self.style_weight * style_loss + self.content_weight * \
             content_loss + self.sobel_weight * sobel_loss
 
-        return mixed_loss, style_loss, content_loss, sobel_loss
+        return {
+            "content_loss": content_loss,
+            "style_loss": style_loss,
+            "sobel_loss": sobel_loss,
+            "mixed_loss": mixed_loss,
+        }
